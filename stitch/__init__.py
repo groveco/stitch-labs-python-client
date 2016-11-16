@@ -104,12 +104,12 @@ class StitchEndpoint(object):
     def get(self, id):
         data = {self._resource: [{'id': id}]}
         resp = self._request(self.READ_DETAIL, data)
-        return resp[0] if len(resp) else None
+        return resp[0] if resp and len(resp) else None
 
     def _write(self, data):
         data = {self._resource: [data]}
         resp = self._request(self.WRITE, data)
-        return resp[0] if len(resp) else None
+        return resp[0] if resp and len(resp) else None
 
     def delete(self, id):
         return self._write({'id': id, 'delete': 1})
