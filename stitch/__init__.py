@@ -1,5 +1,21 @@
 import requests
 import json
+import logging
+
+
+logger = logging.getLogger('stitch')
+
+
+class StitchException(Exception):
+    pass
+
+
+class StitchUnauthorizedException(StitchException):
+    pass
+
+
+class StitchTooManyRequestsException(StitchException):
+    pass
 
 
 class StitchApiEntity(object):
@@ -53,35 +69,37 @@ class StitchEndpoint(object):
     READ_DETAIL = ('read', 'https://api-pub.stitchlabs.com/api2/v2/%s/detail')
     WRITE = ('write', 'https://api-pub.stitchlabs.com/api2/v1/%s')
 
+    def __init__(self, resource, headers):
+        self._headers = headers
+        self._resource = resource
+
     def _request(self, action, data):
         data['action'] = action[0]
         uri = action[1] % self._resource
+        data = json.dumps(data)
         try:
             response = requests.request("POST",
                                         uri,
-                                        data=json.dumps(data),
+                                        data=data,
                                         headers=self._headers)
+            logger.info('STITCH API REQUEST: %s %s\n'
+                        'DATA="%s" \n'
+                        'RESPONSE="%s"' % (response.status_code, uri, data, response.content))
         except Exception as e:
-            print ('Request to %s with %s failed with: %s' % (uri, data, e))
             raise Exception('Request to %s with %s failed with: %s' % (uri, data, e))
 
         if response.status_code in [200, 201, 206]:
             try:
                 return StitchApiResult(response.json(), self._resource, self)
             except Exception as e:
-                print ('Failed to parse json response. Request to %s with %s returned non-json content: %s'
+                raise Exception('Failed to parse json response. Request to %s with %s returned non-json content: %s'
                          % (uri, data, response.content))
-                Exception('Failed to parse json response. Request to %s with %s returned non-json content: %s'
-                         % (uri, data, response.content))
+        elif response.status_code == 401:
+            raise StitchUnauthorizedException('URL:%s DATA:%s RESPONSE:%s' % (uri, data, response.content))
+        elif response.status_code == 429:
+            raise StitchTooManyRequestsException('URL:%s DATA:%s RESPONSE:%s' % (uri, data, response.content))
         else:
-            print ('Request to %s with %s returned status code %s and content %s'
-                            % (uri, data, response.status_code, response.content))
-            raise Exception('Request to %s with %s returned status code %s and content %s'
-                            % (uri, data, response.status_code, response.content))
-
-    def __init__(self, resource, headers):
-        self._headers = headers
-        self._resource = resource
+            raise StitchException('STATUS:%s URL:%s DATA:%s RESPONSE:%s' % (response.status_code, uri, data, response.content))
 
     def _list(self, page_num=1, page_size=20, filter_=None, sort_=None):
         data = {
