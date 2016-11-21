@@ -95,11 +95,11 @@ class StitchEndpoint(object):
                 raise Exception('Failed to parse json response. Request to %s with %s returned non-json content: %s'
                          % (uri, data, response.content))
         elif response.status_code == 401:
-            raise StitchUnauthorizedException
+            raise StitchUnauthorizedException('URL:%s DATA:%s RESPONSE:%s' % (uri, data, response.content))
         elif response.status_code == 429:
-            raise StitchTooManyRequestsException
+            raise StitchTooManyRequestsException('URL:%s DATA:%s RESPONSE:%s' % (uri, data, response.content))
         else:
-            raise StitchException('Unknown status code %s ' % response.status_code)
+            raise StitchException('STATUS:%s URL:%s DATA:%s RESPONSE:%s' % (response.status_code, uri, data, response.content))
 
     def _list(self, page_num=1, page_size=20, filter_=None, sort_=None):
         data = {
