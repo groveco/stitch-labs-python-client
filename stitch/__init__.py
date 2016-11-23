@@ -113,8 +113,8 @@ class StitchEndpoint(object):
     def page(self, page_num=1, page_size=20, filter_=None):
         return self._list(page_num, page_size, filter_)
 
-    def page_count(self, page_size=20):
-        return self._list(page_size=page_size).meta['last_page']
+    def page_count(self, page_size=20, filter_=None):
+        return self._list(page_size=page_size, filter_=filter_).meta['last_page']
 
     def count(self, filter_=None):
         return int(self._list(page_size=1, filter_=filter_).meta['total'])
