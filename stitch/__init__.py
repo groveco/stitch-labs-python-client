@@ -67,6 +67,7 @@ class StitchEndpoint(object):
 
     READ = ('read', 'https://api-pub.stitchlabs.com/api2/v2/%s')
     READ_DETAIL = ('read', 'https://api-pub.stitchlabs.com/api2/v2/%s/detail')
+    READ_REPORTS = ('read', 'https://api-pub.stitchlabs.com/api2/v2/%s/reports')
     WRITE = ('write', 'https://api-pub.stitchlabs.com/api2/v1/%s')
 
     def __init__(self, resource, headers):
@@ -114,10 +115,31 @@ class StitchEndpoint(object):
         return self._list(page_num, page_size, filter_, sort_)
 
     def page_count(self, page_size=20, filter_=None):
-        return self._list(page_size=page_size, filter_=filter_).meta['last_page']
+        return int(self._list(page_size=page_size, filter_=filter_).meta['last_page'])
 
     def count(self, filter_=None):
         return int(self._list(page_size=1, filter_=filter_).meta['total'])
+
+    def _reports(self, page_num=1, page_size=20, filter_=None, sort_=None, **kwargs):
+        data = {
+            'page_num': page_num,
+            'page_size': page_size,
+            'filter': filter_ or {},
+            'sort': sort_ or {}
+        }
+
+        data.update(kwargs)
+
+        return self._request(self.READ_REPORTS, data)
+
+    def reports_page(self, page_num=1, page_size=20, filter_=None, sort_=None, **kwargs):
+        return self._reports(page_num, page_size, filter_, sort_, **kwargs)
+
+    def reports_page_count(self, page_num=1, page_size=20, filter_=None, sort_=None, **kwargs):
+        return int(self._reports(page_num, page_size, filter_, sort_, **kwargs).meta['last_page'])
+
+    def reports_count(self, page_num=1, page_size=20, filter_=None, sort_=None, **kwargs):
+        return int(self._reports(page_num, page_size, filter_, sort_, **kwargs).meta['total'])
 
     def get(self, id):
         data = {self._resource: [{'id': id}]}
