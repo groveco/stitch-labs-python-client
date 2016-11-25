@@ -162,6 +162,10 @@ class StitchEndpoint(object):
     def create(self, data):
         return self._write(data)
 
+    def update(self, id, data):
+        data['id'] = id
+        return self._write(data)
+
 
 class StitchApi(object):
 
