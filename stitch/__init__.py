@@ -48,7 +48,13 @@ class StitchApiResult(object):
     def __init__(self, parsed_response, resource, parent):
         self._endpoint = parent
         self._resource = resource
-        self._entities = [StitchApiEntity(resource, r, self) for r in parsed_response.get(resource, [])]
+        parsed_resource = parsed_response[resource]
+
+        if isinstance(parsed_resource, dict):
+            self._entities = [StitchApiEntity(resource, parsed_resource, self)]
+        elif isinstance(parsed_resource, list):
+            self._entities = [StitchApiEntity(resource, r, self) for r in parsed_resource]
+
         self.meta = parsed_response.get('meta', {})
         self.sideloaded = {k: v for k, v in parsed_response.items() if k not in ['meta', self._resource]}
 
