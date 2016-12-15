@@ -27,14 +27,17 @@ class StitchApiEntity(object):
         self.links = self.data.get('links', {})
         self._parent_result = parent
 
-    def get_linked(self, resource, drill=True):
+    def get_linked(self, resource, drill=True, filter_=None):
         if resource not in self.links and drill:
-            return self.detail().get_linked(resource, drill=False)
+            return self.detail().get_linked(resource, drill=False, filter_=filter_)
 
         linked_ids = [l['id'] for l in self.links.get(resource, [])]
         loaded_resources = self._parent_result.sideloaded.get(resource, {})
         relevant_resources = [e for k, e in loaded_resources.items() if k in linked_ids]
-        return [StitchApiEntity(resource, e, self._parent_result) for e in relevant_resources]
+        entities = [StitchApiEntity(resource, e, self._parent_result) for e in relevant_resources]
+        if filter_ is not None:
+            return [e for e in entities if filter_(e)]
+        return entities
 
     def detail(self):
         return self._parent_result._endpoint.get(self.id)
