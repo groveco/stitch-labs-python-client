@@ -180,13 +180,15 @@ class StitchApi(object):
 
     # Note that Attributes do not support any WRITE operations
     RESOURCES = [
-        'Products',
-        'Variants',
-        'SalesOrders',
+        'Attributes',
         'Contacts',
         'ContactTags',
+        'Invoices',
+        'InvoicePayments',
+        'Products',
         'PurchaseOrders',
-        'Attributes'
+        'SalesOrders',
+        'Variants',
     ]
 
     def __init__(self, auth):
