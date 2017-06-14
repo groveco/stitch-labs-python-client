@@ -18,6 +18,10 @@ class StitchTooManyRequestsException(StitchException):
     pass
 
 
+class StitchBadGatewayException(StitchException):
+    pass
+
+
 class StitchApiEntity(object):
 
     def __init__(self, resource, data, parent):
@@ -108,6 +112,8 @@ class StitchEndpoint(object):
             raise StitchUnauthorizedException('URL:%s DATA:%s RESPONSE:%s' % (uri, data, response.content))
         elif response.status_code == 429:
             raise StitchTooManyRequestsException('URL:%s DATA:%s RESPONSE:%s' % (uri, data, response.content))
+        elif response.status_code == 502:
+            raise StitchBadGatewayException('URL:%s DATA:%s RESPONSE:%s' % (uri, data, response.content))
         else:
             raise StitchException('STATUS:%s URL:%s DATA:%s RESPONSE:%s' % (response.status_code, uri, data, response.content))
 
