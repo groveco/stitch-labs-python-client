@@ -52,6 +52,20 @@ Usage
     
     # And, how about removing all the products? Dangerous!
     stitch.Products.delete_all()
+    
+    # Let's close SalesOrders that are shipped, but still open
+    filter_ = {"and":[{"status_package":3},{"complete":0}]}
+    def get_page_of_orders():
+        return stitch.SalesOrders.page(page_num=1,
+                                       page_size=50,
+                                       filter_=filter_)
+    orders = get_page_of_orders()
+    while len(orders):
+        print "Only %s more to go!" % stitch.SalesOrders.count(filter_=filter_)
+        for o in orders:
+            stitch.SalesOrders.update(o.id, {"complete": 1})
+            print "Closed SalesOrder %s." % o.id
+        orders = get_page_of_orders()
 ::
 
 
