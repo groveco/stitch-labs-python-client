@@ -181,6 +181,12 @@ class StitchEndpoint(object):
         data['id'] = id
         return self._write(data)
 
+    def bulk_update(self, bulk_action, data):
+        data = {self._resource: data}
+        data['bulk_action'] = bulk_action
+        resp = self._request(self.WRITE, data)
+        return resp if resp and len(resp) else None
+
 
 class StitchApi(object):
 
