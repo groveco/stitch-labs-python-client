@@ -87,8 +87,10 @@ class StitchEndpoint(object):
         self._headers = headers
         self._resource = resource
 
-    def _request(self, action, data):
+    def _request(self, action, data, exclude_abs_attrs=False):
         data['action'] = action[0]
+        if action == self.READ and exclude_abs_attrs:
+            data['exclude_absolute_attributes'] = True
         uri = action[1] % self._resource
         data = json.dumps(data)
         try:
@@ -117,7 +119,7 @@ class StitchEndpoint(object):
         else:
             raise StitchException('STATUS:%s URL:%s DATA:%s RESPONSE:%s' % (response.status_code, uri, data, response.content))
 
-    def _list(self, page_num=1, page_size=20, filter_=None, sort_=None):
+    def _list(self, page_num=1, page_size=20, filter_=None, sort_=None, exclude_abs_attrs=False):
         data = {
             'page_num': page_num,
             'page_size': page_size,
@@ -126,14 +128,14 @@ class StitchEndpoint(object):
         }
         return self._request(self.READ, data)
 
-    def page(self, page_num=1, page_size=20, filter_=None, sort_=None):
-        return self._list(page_num, page_size, filter_, sort_)
+    def page(self, page_num=1, page_size=20, filter_=None, sort_=None, exclude_abs_attrs=False):
+        return self._list(page_num, page_size, filter_, sort_, exclude_abs_attrs)
 
     def page_count(self, page_size=20, filter_=None):
-        return int(self._list(page_size=page_size, filter_=filter_).meta['last_page'])
+        return int(self._list(page_size=page_size, filter_=filter_, exclude_abs_attrs=True).meta['last_page'])
 
     def count(self, filter_=None):
-        return int(self._list(page_size=1, filter_=filter_).meta['total'])
+        return int(self._list(page_size=1, filter_=filter_, exclude_abs_attrs=True).meta['total'])
 
     def _reports(self, page_num=1, page_size=20, filter_=None, sort_=None, **kwargs):
         data = {
