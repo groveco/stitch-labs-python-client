@@ -126,7 +126,7 @@ class StitchEndpoint(object):
             'filter': filter_ or {},
             'sort': sort_ or {}
         }
-        return self._request(self.READ, data)
+        return self._request(self.READ, data, exclude_abs_attrs)
 
     def page(self, page_num=1, page_size=20, filter_=None, sort_=None, exclude_abs_attrs=False):
         return self._list(page_num, page_size, filter_, sort_, exclude_abs_attrs)
